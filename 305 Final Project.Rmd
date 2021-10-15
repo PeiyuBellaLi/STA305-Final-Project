@@ -1,0 +1,126 @@
+---
+title: "Factorial Experiment: Factors that Influence the Time to Boil Water"
+author: "Peiyu Li"
+date: "April 16, 2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Description
+In today's fast-paced world, many people do not want to spend lots of time cooking. Choosing suitable cookware and use it correctly may affect the efficiency of cooking. Stainless steel and Ceramic products are highly recommended by people when someone wants to get new cookware. However, these two kinds of cookware have different usage due to the difference in the materials. Not to rule out other common cookware styles, but stainless steel vs. ceramic has been a long-running cookware rivalry (Verkhovskaya, 2020). 
+
+In my experiment, one of my interests is to see which one of these two kinds of cookware can heat water faster. Another factor that may affect the time to boil water is whether to put the cover lid on. If we heat water in an open pot, we may concern that some of the energy escapes with the vapor. But there are some theories that said covering the pot has minor effects on heating time (Cook's Illustrated, n.d.). Also, the amount of water is a factor that should be concerned. Therefore, this experiment is to measure the time(in minutes) it takes to boil water to 90 degrees Celsius. There are three factors, amount of water (500ml vs. 1000ml), whether cover the pot with a lid (Yes vs. No), and the pot's material (stainless steel vs. ceramic). 
+    
+The design of this experiment is shown in the table below (Table 1). To explore these three factors' main effect and their possible interactions, I used a $2^3$ factorial design. This experiment will mainly focus on testing three null hypotheses. The first null hypothesis is the amount of water does not affect the time for the water to be boiled to 90°C. The second one is the time for the water to be boiled to 90°C is the same for the pot to be covered or uncovered by a lid. The last null hypothesis is that there is no significant difference in the time for the water to be boiled to 90 °C between using a stainless steel pot and using a ceramic pot. 
+
+```{r}
+design <- matrix(c("500 ml(-1)", "1000 ml(+1)", "No(-1)", "Yes(+1)", 
+                   "Stainless Steel(-1)", "Ceramic(+1)"), ncol = 2, byrow = TRUE)
+colnames(design) <- c("Level 1", "Lecel 2")
+rownames(design) <- c("Water", "Lid", "Material")
+knitr::kable(as.table(design), caption = "Design of the experiment")
+```
+
+The materials required to complete this experiment are a stainless steel pot, a ceramic pot, an infrared thermometer, a stove, a electronic scale, and a timer on the phone. To control other factors, the heating surface areas of the two pots are the same, and each run is performed on the same stove. The temperature of the water before being boiled is at room temperature, around 25°C. Also, each run is done on the same stove with the same heating level. When each run starts, a certain type of pot with a certain amount of water which is measure by the electronic scale is put on the stove, and I start the timer once I turn on the stove. I use the infrared thermometer to monitor the water temperature, and once the temperature is up to 90°C, I stop the timer. The whole experiment is completed in 4 days, and I complete 4 conditions at random each day. Each condition is performed at least two hours after the previous one is done, and this allows the stove to be completely cooled.
+
+As shown in Table 1, each factor has two levels, and they are recorded as -1 and 1. Every time I boil the water would be one experiment unit. The response variable is the time for the water to be boiled to 90 °C. There are 8 conditions in this experiment, but I repeat each condition twice. In total, there are 16 runs. Each condition is randomly assigned to one of the experimental units, so these 16 runs are completely in random order. This randomization technique is a way to avoid bias, and it can also prevent the experiment from being affected by unknown variables. The specific design and the data are shown in the following table (Table 2).
+
+
+```{r}
+Condition <- c(1:16)
+Run <- c(9,6,14,5,2,11,3,13,4,12,7,16,10,1,8,15)
+Water <- c(-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1)
+Lid <- c(-1,-1,1,1,-1,-1,1,1,-1,-1,1,1,-1,-1,1,1)
+Material <- c(-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1,1,1,1,1)
+Time <- c(5.317,7.533,4.967,6.867,7.083,10.833,7.050,9.667,
+          4.983,7.283,4.600,6.750,7.033,10.767,6.933,10.333)
+exp_data<-data.frame(Condition,Run,Water,Lid,Material,Time)
+knitr::kable(exp_data, caption = "Data Structure")
+```
+
+# Data Analysis
+## i. Main Effects and Interaction Effects
+In order to get the main effects and interaction effects, a factorial linear model is constructed. The model can be denoted as follow: $y_i = \beta_0 + \beta_1x_{i1} +  \beta_2x_{i2} + \beta_3x_{i3} + \beta_4x_{i1}x_{i2} + \beta_5x_{i1}x_{i3} + \beta_6x_{i2}x_{i3} + \beta_7x_{i1}x_{i2}x_{i3} + \epsilon_i$. This model includes three main effects term, three two-way interaction effects, and one three-way interaction effect. $x_{i1}$, $x_{i2}$, and $x_{i3}$ represent the amount of water, cover or uncover with the lid, and the material of the pot, respectively. If the amount of water is 500ml, $x_{i1}$ is -1, and $x_{i1}$ is 1 when the amount of water is 1000ml. Similarly, $x_{i2}$ is -1 if we do not cover the lid, and $x_{i2}$ is 1 otherwise. $x_{i3}$ is -1 if the pot is made of stainless steel, and $x_{i1}$ is one it is ceramic pot. In addition, $y_i$ represents the time to boil the water to 90°C, and $\epsilon_i$ is the random error.
+
+After fitting the model, the output is shown below (Table 3). 
+
+```{r}
+mod <- lm(Time~Water*Lid*Material ,data=exp_data)
+knitr::kable(round(summary(mod)$coeff,4),caption = "Model Summary")
+```
+
+Since I recorded the two levels for each factor as -1 and 1, the main effects and interaction effects can be obtained by multiplying the coefficient estimates by 2. The estimates of the effects are shown in Table 4. The first three values are the estimates of the three main effects. The factor water can be explained as when the amount of water change from 500ml to 1000ml, the time to boil the water to 90°C increases 2.758 minutes. The other two main effects can be interpreted similarly. 
+
+The next three values are the two-way interaction effects. For example, the interaction effect between water and lid can be interpreted as the difference of the main effect of water when the lid factor change from level 1 to level 2 is -0.242. The last one is the three-way interaction effect, which means the difference of the interaction of water and lid when material change from stainless steel to ceramic is -0.125. It is noticeable that according to Table 3, the three main effects and the interaction effects between the amount of water and the pot's material are very significant because their p-values are all very close to 0. 
+
+```{r}
+effects <- matrix(c(2.758,-0.458,2.675,-0.242,0.617,0.025,-0.125),ncol=1,byrow=TRUE)
+colnames(effects) <- c("Estimates of the effects")
+rownames(effects) <- c("Water","Lid","Material","Water:Lid","Water:Material","Lid:Material","Water:Lid:Material")
+knitr::kable(as.table(effects), caption = "Main Effects and Interaction Effects")
+```
+
+## ii. Cube Plot and Main Effects
+In order to visualize the main effects, a cube plot is shown below. The main effects can be seen as the average value of the difference between the two levels for one of the factor. Every edge in the cube plot represents that there is only of factor changes while the other two factors remain the same level. For example, the main effect for water can be calculated using the four horizontal edges, which is $\frac{(7.408-5.15)+(6.8085-4.7835)+(10.8-7.058)+(10-6.9915)}{4} = 2.758$. This is the same value we calculated from the linear model estimates. In addition, we can see that all the three factors can obviously affect the response when they change from level 1 to level2. It agrees with the conclusion from the linear model that all the three main effects are very significant.
+```{r, include=FALSE}
+library("FrF2")
+```
+
+```{r}
+cubePlot(mod, "Water","Lid","Material",main="Cube plot for the water boil experiment")
+```
+
+## iii. Interaction Plots and Interaction Effects
+The interaction plots can help to visualize the interaction effects. The following three plots show the three two-way interactions among the three factors. Although the interaction plot for the factor water and material do not show an interaction, there is still a significant interaction effect between these two factors based on the p-value (0.0005 < 0.05). Also, the main effect for water and material are 2.758 and 2.675, which are relatively large effects. The interaction effect between water and lid is very small (-0.242) with a large p-value 0.06 which means it is not significant, and the interaction plot also agree with that. The interaction between lid and material has an even larger p-value (0.83), and the parallel lines in the interaction plot also means there is no evidence of a interaction between lid and material.
+  
+```{r}
+interaction.plot(exp_data$Water,exp_data$Lid,exp_data$Time,
+                 xlab = "Water", trace.label = "Lid", ylab = "Boiling Time")
+interaction.plot(exp_data$Water,exp_data$Material,exp_data$Time,
+                 xlab = "Water", trace.label = "Material", ylab = "Boiling Time")
+interaction.plot(exp_data$Lid,exp_data$Material,exp_data$Time,
+                 xlab = "Lid", trace.label = "Material", ylab = "Boiling Time")
+```
+
+## iv. Hypothesis Testing
+The three null hypothesis I proposed are the amount of water, whether cover the lid or not, and the material of the pot do not affect the time to boil water up to 90°C. According to the summary table of the linear model, the p-value for the three main effects are all less than the significance level 0.05. Therefore, we have very strong evidence to reject the null hypothesis. 
+
+## v. Variances and Confidence Interval
+Since we have repeated measure for each experimental condition, we can calculate the variance for each effect. This can be done by using the standard error from the linear model output. Each effect has the same standard error, 0.05543, and we should multiply it by 2 and get 0.11086. Thus, the estimated variance is $0.11086^2 = 0.0123$. We can also calculate the variance of the 16 observations by using the formula $Var(effect) = s^2(\frac{1}{8}+\frac{1}{8})$, where $s^2$ is the pooled variance and $Var(effect)$ is 0.0123. Thus, the estimated variance of the observations are $0.0123*4=0.0492$.
+
+The 95% confidence intervals for the main effects and interaction effects are shown in the table below (Table 5). If the confidence interval does not contain zero, it means it is significant, and the conclusions should be the same as we see from the p-values. From the results below, the three main effects and the interaction effect between water and material have confidence intervals that do not contain zero. As a result, we reject the null hypothesis that these effects are not effective. 
+
+The 95% confidence interval for water is (2.50, 3.01), which means we have 95% confidence that the true main effect for water is within this interval. The other confidence intervals can be explained in the similar ways.
+```{r}
+knitr::kable(2*confint(mod),caption = "95% Confidence Interval")
+```
+
+
+# Conclusions
+
+From the analysis above, we reject the original three null hypotheses about the main effects and conclude that the time for the water at room temperature (25°C) to be boiled to 90°C can be affected by the amount of water, whether to cover the lid, and the material of the pot. Specifically, if the other two factor remain in the same level and the amount of water change from 500ml to 1000ml, the boiling time will be increase about 2.758 minutes. If we cover the pot with lid instead of uncovering the pot and the other two factors remain the same, the boiling time will decrease around 0.458 minutes. Lastly, if we use ceramic pot instead of stainless steel pot and the other two factors remain the same, the boiling time will increase about 2.675 minutes.
+
+Also, since the p-value for the interaction between water and material is less than 0.05, we can also conclude that the interaction effect between these two factors is also significant. It means the difference of the main effects of water is 0.617 minutes when the material changes from stainless steel to ceramic.
+
+The estimated variance for each effect is 0.0123, and estimated variance of the 16 observations is 0.0492. The variance is the average of squared differences from the mean, and these values can help us to know the variability of the data collected. In addition, the 95% confidence intervals for the effects give the same conclusion as we see from the p-values. If zero is included in the interval, then this effect is significant. Again, all the main effects and the interaction effect between water and material show the significance.
+
+It is noticeable that the optimal conditions for this experiment are when the factor water is at level one, the factor lid at level two, and the factor material at level one. More specifically, the optimal conditions represent using stainless steel pot to boil 500ml water with pot lid. With these conditions, the time to boil water from room temperature to 90°C will be the shortest.
+
+# Discussion and Limitations
+
+Since I used my own stainless steel pot and a ceramic pot to do this experiment, the results may only apply to these two specific pots. Other stainless steel pots and ceramic pots can have different mass, heat area, or volume, which can cause the different heat conduction rate. This is probably the biggest limitation of my experiment. 
+
+Also, the electronic scale that was used to measure the amount of water and the infrared thermometer that was used to measure the temperature of the water may cause minor errors. Because I started and stopped the timer manually, I could not make sure that the time I recorded is exact. Even a very small error can effect the final result, but these errors are hard to avoid. 
+
+Another potential issue is that I found that the bottom of the pots were not heated completely evenly. Thus, it was hard to decide whether to stop the timer when some area of the water was heated up to 90°C while the water in other area was around 88°C.
+
+For future improvements, it would be better if we can customize a stainless steel pot and a ceramic pot with exactly the same shape, volume, and heating surface areas. This can eliminate most of the biases that are caused by these external effects. It is also important to get a more precise electronic scale to measure the amount of water and a better thermometer to avoid bias. In addition, a stable and even heating stove should be chosen to boil the water. 
+
+# References
+Cook's Illustrated. (n.d.). Covered vs. Uncovered Pots for Boiling Water. https://www.cooksillustrated.com/how_tos/6646-covered-vs-uncovered-pots-for-boiling-water 
+
+M., Verkhovskaya. (2020). Stainless Steel Vs. Ceramic Cookware: Which Is Best for Your Kitchen?. https://www.cookwares.co/stainless-steel-vs-ceramic-cookware/
+
